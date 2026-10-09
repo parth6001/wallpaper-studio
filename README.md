@@ -1,3 +1,7 @@
+## v4.1 Theme button fix
+
+The highlighted header sun/moon button now toggles **website light/dark appearance**, without altering wallpaper style, seed, palette or wallpaper dark/light mode. Preference persists in localStorage. The Wallpaper Mode controls below the palette still affect wallpaper colors.
+
 # Wallpaper Studio v4.0 — Reference Edition
 
 A fast, minimalist wallpaper generator inspired by the **look and workflow** of the user's WLLPR reference screenshots. It uses original, standalone code and a deterministic drawing engine, **not** copied source code, images, brand assets or fonts from the reference site.
