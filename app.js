@@ -1,14 +1,70 @@
 'use strict';
 const $=id=>document.getElementById(id);
-const STYLES=[['aurora','✧','Aurora'],['waves','≋','Waves'],['orbs','◉','Orbs'],['mesh','▨','Mesh'],['ribbons','〰','Ribbons'],['mountains','△','Hills'],['rings','◎','Rings'],['stars','✦','Stars'],['glass','◇','Glass']];
+const STYLES=[['aurora','✧','Aurora'],['waves','≋','Waves'],['orbs','◉','Orbs'],['mesh','▨','Mesh'],['ribbons','〰','Ribbons'],['mountains','△','Hills'],['rings','◎','Rings'],['stars','✦','Stars'],['glass','◇','Glass'],['amoled','⬡','AMOLED']];
 const PALETTES=[['#6d5dfc','#ef79a3','#132d5c'],['#00c6a9','#087cbb','#041a46'],['#ff9b71','#e8498a','#34105b'],['#f6bd60','#ed6a5a','#372b66'],['#c8fcf3','#89a6f7','#33366c'],['#ffc8dd','#bde0fe','#4b4d85'],['#f5f7fa','#aebbd3','#28334d'],['#1d2671','#c33764','#090b25'],['#b1e3b0','#23a6a6','#132848'],['#fae18e','#fb918b','#6454a4']];
-const DEFAULT={style:'aurora',colors:[...PALETTES[0]],preset:'1080x2400',width:1080,height:2400,detail:55,glow:55,rotation:0,seed:123456};
+const DEFAULT={style:'aurora',colors:[...PALETTES[0]],preset:'1080x2400',width:1080,height:2400,detail:55,glow:55,rotation:0,intensity:75,flow:55,grain:12,seed:123456};
 let state={...DEFAULT,colors:[...DEFAULT.colors]};let renderId=0;let previewTimer;const cvs=$('preview');const cx=cvs.getContext('2d',{alpha:false});
 function rng(seed){let s=seed>>>0;return ()=>{s+=0x6D2B79F5;let t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296}}
 function hex(c){let s=c.replace('#','');return [0,2,4].map(i=>parseInt(s.slice(i,i+2),16))}function rgba(c,a){let v=hex(c);return `rgba(${v[0]},${v[1]},${v[2]},${a})`}
 function mix(a,b,t){let x=hex(a),y=hex(b);return '#'+x.map((v,i)=>Math.round(v*(1-t)+y[i]*t).toString(16).padStart(2,'0')).join('')}
 function grad(ctx,w,h,colors){let g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,colors[2]);g.addColorStop(.52,mix(colors[2],colors[0],.60));g.addColorStop(1,mix(colors[1],colors[2],.43));ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
 function blob(ctx,x,y,r,color,opacity=1){let g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgba(color,opacity));g.addColorStop(.34,rgba(color,opacity*.44));g.addColorStop(1,rgba(color,0));ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
+function drawAuroraVeils(ctx,w,h,s){
+ const ref=Math.min(w,h),rand=rng(s.seed+91),power=(s.intensity??75)/100,flow=(s.flow??55)/100;
+ ctx.save();ctx.globalCompositeOperation='screen';
+ const bands=3+Math.round(s.detail/28);
+ for(let i=0;i<bands;i++){
+  const center=w*(.1+i/Math.max(1,bands-1)*.8)+(rand()-.5)*w*.2;
+  const phase=rand()*6.28,spread=ref*(.14+flow*.34),amplitude=ref*(.09+flow*.26);
+  const gradient=ctx.createLinearGradient(center-spread,0,center+spread,0);
+  gradient.addColorStop(0,rgba(s.colors[i%3],0));
+  gradient.addColorStop(.36,rgba(s.colors[i%3],.08+power*.25));
+  gradient.addColorStop(.52,rgba(s.colors[(i+1)%3],.16+power*.46));
+  gradient.addColorStop(.72,rgba(s.colors[i%3],.06+power*.22));
+  gradient.addColorStop(1,rgba(s.colors[i%3],0));
+  ctx.beginPath();
+  const step=Math.max(8,h/190);
+  for(let y=-h*.2;y<=h*1.2;y+=step){
+   const x=center+Math.sin(y/h*(4+flow*5)+phase)*amplitude+Math.sin(y/h*11+phase)*amplitude*.22;
+   if(y===-h*.2)ctx.moveTo(x-spread,y);else ctx.lineTo(x-spread,y);
+  }
+  for(let y=h*1.2;y>=-h*.2;y-=step){
+   const x=center+Math.sin(y/h*(4+flow*5)+phase)*amplitude+Math.sin(y/h*11+phase)*amplitude*.22;
+   ctx.lineTo(x+spread,y);
+  }
+  ctx.closePath();ctx.fillStyle=gradient;ctx.fill();
+ }
+ ctx.restore();
+}
+function drawAmoled(ctx,w,h,s){
+ const random=rng(s.seed+501),power=(s.intensity??72)/100,flow=(s.flow??45)/100,ref=Math.min(w,h);
+ ctx.save();ctx.fillStyle='#000000';ctx.fillRect(0,0,w,h);
+ ctx.globalCompositeOperation='screen';
+ const count=3+Math.round(s.detail/24);
+ for(let i=0;i<count;i++){
+  const x=w*(.1+random()*.8),y=h*(.12+random()*.76),radius=ref*(.13+flow*.34),color=s.colors[i%3];
+  const g=ctx.createRadialGradient(x,y,0,x,y,radius);
+  g.addColorStop(0,rgba(color,.24+power*.42));g.addColorStop(.34,rgba(color,.10+power*.17));g.addColorStop(1,rgba(color,0));
+  ctx.fillStyle=g;ctx.fillRect(x-radius,y-radius,radius*2,radius*2);
+ }
+ for(let i=0;i<count+3;i++){
+  const phase=random()*Math.PI*2,base=h*(.12+random()*.75),amp=ref*(.05+flow*.24);
+  ctx.beginPath();for(let x=0;x<=w;x+=Math.max(3,w/170)){
+   const y=base+Math.sin(x/w*(4+flow*7)+phase)*amp+Math.sin(x/w*13+phase)*amp*.15;
+   if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.lineWidth=Math.max(1,ref*(.002+power*.006));ctx.strokeStyle=rgba(s.colors[i%3],.26+power*.58);
+  ctx.shadowBlur=ref*(.012+power*.04);ctx.shadowColor=s.colors[i%3];ctx.stroke();
+ }
+ ctx.restore();
+}
+function addGrain(ctx,w,h,s){
+ const amount=(s.grain??0)/100;if(!amount)return;
+ const tile=document.createElement('canvas');tile.width=128;tile.height=128;
+ const t=tile.getContext('2d'),im=t.createImageData(128,128),r=rng(s.seed+772);
+ for(let i=0;i<im.data.length;i+=4){const v=r()>.5?255:0;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=Math.round(amount*40);}
+ t.putImageData(im,0,0);ctx.save();ctx.fillStyle=ctx.createPattern(tile,'repeat');ctx.fillRect(0,0,w,h);ctx.restore();
+}
 function draw(canvas,s){const ctx=canvas.getContext('2d',{alpha:false});const w=canvas.width,h=canvas.height,ref=Math.min(w,h),random=rng(s.seed),d=s.detail/100,soft=s.glow/100,cols=s.colors;ctx.save();grad(ctx,w,h,cols);ctx.translate(w/2,h/2);ctx.rotate(s.rotation*Math.PI/180);ctx.translate(-w/2,-h/2);
  if(s.style==='aurora'){for(let k=0;k<7+Math.floor(d*6);k++){let x=random()*w,y=random()*h,r=ref*(.35+random()*.85);blob(ctx,x,y,r,cols[k%2],.19+soft*.29)}for(let j=0;j<4+Math.round(d*4);j++){let y=h*(.1+random()*.8),amp=ref*(.06+random()*.15);ctx.beginPath();ctx.moveTo(-w*.5,y);for(let x=-w*.5;x<=w*1.5;x+=Math.max(8,w/130)){let yy=y+Math.sin(x/w*6+j*.9)*amp+Math.sin(x/w*12+j)*amp*.25;ctx.lineTo(x,yy)}ctx.strokeStyle=rgba(cols[j%2],.12+soft*.18);ctx.lineWidth=ref*(.025+soft*.045);ctx.lineCap='round';ctx.stroke()}}
  if(s.style==='waves'||s.style==='ribbons'){let n=s.style==='waves'?8+Math.round(d*24):5+Math.round(d*12);for(let i=0;i<n;i++){let y=h*(i+.4)/n;ctx.beginPath();for(let x=-w*.3;x<=w*1.3;x+=Math.max(5,w/170)){let yy=y+Math.sin((x/w)*7.5+i*.38+s.seed*.000002)*ref*(s.style==='waves'?.12:.22)+Math.sin(x/w*16+i)*ref*.025;if(x===-w*.3)ctx.moveTo(x,yy);else ctx.lineTo(x,yy)}ctx.strokeStyle=rgba(cols[i%3],s.style==='waves'?.36:.46);ctx.lineWidth=ref*(s.style==='waves'?.012:.05)*(1+soft*.7);ctx.lineCap='round';ctx.stroke()}}
@@ -18,14 +74,37 @@ function draw(canvas,s){const ctx=canvas.getContext('2d',{alpha:false});const w=
  if(s.style==='rings'){for(let i=0;i<8+Math.round(d*26);i++){let x=random()*w,y=random()*h,r=ref*(.04+random()*.54);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.strokeStyle=rgba(cols[i%3],.10+soft*.47);ctx.lineWidth=ref*(.002+random()*.013);ctx.stroke()}}
  if(s.style==='stars'){let n=60+Math.round(d*480);for(let i=0;i<n;i++){let x=random()*w,y=random()*h,r=ref*(.0005+random()*.004);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=rgba(i%4===0?cols[1]:'#ffffff',.25+random()*.7);ctx.fill()}for(let i=0;i<8;i++)blob(ctx,random()*w,random()*h,ref*(.12+random()*.35),cols[i%2],.17+soft*.24)}
  if(s.style==='glass'){for(let i=0;i<9+Math.round(d*15);i++){let rw=ref*(.15+random()*.56),rh=ref*(.18+random()*.7),x=random()*w-rw/2,y=random()*h-rh/2,r=ref*.04;ctx.beginPath();ctx.roundRect(x,y,rw,rh,r);ctx.fillStyle=rgba(cols[i%3],.06+soft*.14);ctx.fill();ctx.strokeStyle=rgba('#ffffff',.08+soft*.25);ctx.lineWidth=Math.max(1,ref*.002);ctx.stroke()}for(let i=0;i<5;i++)blob(ctx,random()*w,random()*h,ref*.35,cols[i%2],.18)}
- ctx.restore();}
+ ctx.restore();if(s.style==='aurora')drawAuroraVeils(ctx,w,h,s);addGrain(ctx,w,h,s);}
 function size(){return [Math.min(7680,Math.max(256,+state.width||1080)),Math.min(7680,Math.max(256,+state.height||2400))]}
 function toast(msg){$('toast').textContent=msg;$('toast').style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').style.display='none',2600)}
-function updateControls(){document.querySelectorAll('.stylebtn').forEach(b=>{b.classList.toggle('active',b.dataset.style===state.style);b.setAttribute('aria-pressed',String(b.dataset.style===state.style))});document.querySelectorAll('.palette').forEach(b=>b.classList.toggle('active',b.dataset.index==PALETTES.findIndex(p=>p.every((v,i)=>v===state.colors[i]))));[1,2,3].forEach((n,i)=>$('color'+n).value=state.colors[i]);$('preset').value=state.preset;$('customSize').classList.toggle('hidden',state.preset!=='custom');$('width').value=state.width;$('height').value=state.height;for(let key of ['detail','glow','rotation']){$(key).value=state[key];$(key+'Value').textContent=state[key]+(key==='rotation'?'°':'%')}const [w,h]=size();$('resolution').textContent=`${w} × ${h}`}
-function preview(){const [w,h]=size();let scale=Math.min(1,1000/Math.max(w,h));cvs.width=Math.round(w*scale);cvs.height=Math.round(h*scale);draw(cvs,state);$('description').textContent=`${STYLES.find(t=>t[0]===state.style)[2]} · Seed ${state.seed} · locally generated`;$('status').textContent='Ready'}
+function updateControls(){document.querySelectorAll('.stylebtn').forEach(b=>{b.classList.toggle('active',b.dataset.style===state.style);b.setAttribute('aria-pressed',String(b.dataset.style===state.style))});document.querySelectorAll('.palette').forEach(b=>b.classList.toggle('active',b.dataset.index==PALETTES.findIndex(p=>p.every((v,i)=>v===state.colors[i]))));[1,2,3].forEach((n,i)=>$('color'+n).value=state.colors[i]);$('preset').value=state.preset;$('customSize').classList.toggle('hidden',state.preset!=='custom');$('width').value=state.width;$('height').value=state.height;for(let key of ['detail','glow','rotation','intensity','flow','grain']){$(key).value=state[key];$(key+'Value').textContent=state[key]+(key==='rotation'?'°':'%')}$('intensityLabel').textContent=state.style==='glass'?'Glass intensity':state.style==='amoled'?'Neon intensity':'Aurora intensity';$('flowLabel').textContent=state.style==='glass'?'Shape flow':state.style==='amoled'?'Neon wave flow':'Curtain flow';$('engineHelp').textContent=state.style==='glass'?'Control luminous glass reflections and shapes.':state.style==='amoled'?'Deep black background with adjustable neon waves.':'Control the glow and movement of aurora curtains.';const [w,h]=size();$('resolution').textContent=`${w} × ${h}`}
+function preview(){const [w,h]=size();let scale=Math.min(1,1000/Math.max(w,h));cvs.width=Math.round(w*scale);cvs.height=Math.round(h*scale);draw(cvs,state);updateLockScreen();$('description').textContent=`${STYLES.find(t=>t[0]===state.style)[2]} · Seed ${state.seed} · locally generated`;$('status').textContent='Ready'}
 function refresh(){updateControls();clearTimeout(previewTimer);previewTimer=setTimeout(preview,55)}
 function newSeed(){state.seed=Math.floor(Math.random()*4294967295);refresh()}
-function init(){STYLES.forEach(([id,icon,name])=>{let b=document.createElement('button');b.type='button';b.className='stylebtn';b.dataset.style=id;b.innerHTML=`<i aria-hidden="true">${icon}</i>${name}`;b.onclick=()=>{state.style=id;refresh()};$('styles').append(b)});PALETTES.forEach((p,i)=>{let b=document.createElement('button');b.type='button';b.className='palette';b.dataset.index=i;b.setAttribute('aria-label',`Palette ${i+1}`);b.style.background=`linear-gradient(135deg,${p.join(',')})`;b.onclick=()=>{state.colors=[...p];refresh()};$('palettes').append(b)});for(let i=1;i<=3;i++)$('color'+i).addEventListener('input',e=>{state.colors[i-1]=e.target.value;refresh()});$('preset').onchange=e=>{state.preset=e.target.value;if(state.preset!=='custom'){[state.width,state.height]=state.preset.split('x').map(Number)}refresh()};for(let k of ['width','height'])$(k).addEventListener('change',e=>{state[k]=Math.min(7680,Math.max(256,Number(e.target.value)||256));refresh()});for(let k of ['detail','glow','rotation'])$(k).addEventListener('input',e=>{state[k]=+e.target.value;refresh()});$('refresh').onclick=newSeed;$('shuffle').onclick=()=>{state.style=STYLES[Math.floor(Math.random()*STYLES.length)][0];state.colors=[...PALETTES[Math.floor(Math.random()*PALETTES.length)]];state.seed=Math.floor(Math.random()*4294967295);refresh()};$('reset').onclick=()=>{state={...DEFAULT,colors:[...DEFAULT.colors]};refresh();toast('Defaults restored')};$('save').onclick=()=>{try{let list=JSON.parse(localStorage.getItem('wallpaper-studio-saves')||'[]');list.unshift({...state,colors:[...state.colors]});localStorage.setItem('wallpaper-studio-saves',JSON.stringify(list.slice(0,12)));loadHistory();toast('Design saved on this device')}catch{toast('Local storage unavailable')}};$('copy').onclick=async()=>{let str=JSON.stringify(state);try{await navigator.clipboard.writeText(str);toast('Settings copied to clipboard')}catch{toast('Clipboard unavailable: use HTTPS')}};document.querySelectorAll('[data-format]').forEach(b=>b.onclick=()=>exportWallpaper(b.dataset.format));loadHistory();refresh();if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+function updateLockScreen(){
+ const overlay=$('lockOverlay');if(!overlay)return;
+ overlay.hidden=!$('lockToggle').checked;
+ const d=new Date();$('lockDate').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+ $('lockTime').textContent=d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',hour12:false});
+}
+function init(){
+ $('lockToggle').addEventListener('change',updateLockScreen);
+ $('downloadSettings').onclick=()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='wallpaper-studio-preset.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
+ };
+ $('importSettings').onchange=async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  try{const obj=JSON.parse(await file.text());
+   if(!STYLES.some(x=>x[0]===obj.style)||!Array.isArray(obj.colors)||obj.colors.length!==3||!obj.colors.every(c=>/^#[0-9a-f]{6}$/i.test(c)))throw Error('Invalid preset');
+   state={...DEFAULT,...obj,colors:[...obj.colors]};
+   for(const k of ['detail','glow','rotation','intensity','flow','grain'])state[k]=Math.max(0,Math.min(k==='rotation'?360:100,Number(state[k])||0));
+   state.width=Math.max(256,Math.min(7680,Number(state.width)||1080));state.height=Math.max(256,Math.min(7680,Number(state.height)||2400));
+   if(!['custom',...Array.from($('preset').options).map(x=>x.value)].includes(state.preset))state.preset='custom';
+   refresh();toast('Preset imported');
+  }catch{toast('Invalid preset file')}e.target.value='';
+ };
+STYLES.forEach(([id,icon,name])=>{let b=document.createElement('button');b.type='button';b.className='stylebtn';b.dataset.style=id;b.innerHTML=`<i aria-hidden="true">${icon}</i>${name}`;b.onclick=()=>{state.style=id;refresh()};$('styles').append(b)});PALETTES.forEach((p,i)=>{let b=document.createElement('button');b.type='button';b.className='palette';b.dataset.index=i;b.setAttribute('aria-label',`Palette ${i+1}`);b.style.background=`linear-gradient(135deg,${p.join(',')})`;b.onclick=()=>{state.colors=[...p];refresh()};$('palettes').append(b)});for(let i=1;i<=3;i++)$('color'+i).addEventListener('input',e=>{state.colors[i-1]=e.target.value;refresh()});$('preset').onchange=e=>{state.preset=e.target.value;if(state.preset!=='custom'){[state.width,state.height]=state.preset.split('x').map(Number)}refresh()};for(let k of ['width','height'])$(k).addEventListener('change',e=>{state[k]=Math.min(7680,Math.max(256,Number(e.target.value)||256));refresh()});for(let k of ['detail','glow','rotation','intensity','flow','grain'])$(k).addEventListener('input',e=>{state[k]=+e.target.value;refresh()});$('refresh').onclick=newSeed;$('shuffle').onclick=()=>{state.style=STYLES[Math.floor(Math.random()*STYLES.length)][0];state.colors=[...PALETTES[Math.floor(Math.random()*PALETTES.length)]];state.seed=Math.floor(Math.random()*4294967295);refresh()};$('reset').onclick=()=>{state={...DEFAULT,colors:[...DEFAULT.colors]};refresh();toast('Defaults restored')};$('save').onclick=()=>{try{let list=JSON.parse(localStorage.getItem('wallpaper-studio-saves')||'[]');list.unshift({...state,colors:[...state.colors]});localStorage.setItem('wallpaper-studio-saves',JSON.stringify(list.slice(0,12)));loadHistory();toast('Design saved on this device')}catch{toast('Local storage unavailable')}};$('copy').onclick=async()=>{let str=JSON.stringify(state);try{await navigator.clipboard.writeText(str);toast('Settings copied to clipboard')}catch{toast('Clipboard unavailable: use HTTPS')}};document.querySelectorAll('[data-format]').forEach(b=>b.onclick=()=>exportWallpaper(b.dataset.format));loadHistory();refresh();if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 function loadHistory(){let list=[];try{list=JSON.parse(localStorage.getItem('wallpaper-studio-saves')||'[]')}catch{}let wrap=$('history');wrap.replaceChildren();if(!list.length){let t=document.createElement('span');t.className='empty';t.textContent='No saved designs yet';wrap.append(t);return}list.forEach((s,i)=>{let b=document.createElement('button');b.type='button';b.title=`Restore design ${i+1}: ${s.style}`;b.setAttribute('aria-label',b.title);b.style.background=`linear-gradient(135deg,${s.colors.join(',')})`;b.onclick=()=>{state={...s,colors:[...s.colors]};refresh();toast('Design restored')};wrap.append(b)})}
 async function exportWallpaper(format){let [w,h]=size();const pixels=w*h;if(pixels>32000000){toast('Resolution too large for safe browser export (max 32 MP)');return}let buttons=document.querySelectorAll('[data-format]');buttons.forEach(b=>b.disabled=true);$('status').textContent='Rendering full resolution…';await new Promise(r=>setTimeout(r,45));try{let out=document.createElement('canvas');out.width=w;out.height=h;draw(out,state);let mime=format==='jpeg'?'image/jpeg':`image/${format}`;let blob=await new Promise(resolve=>out.toBlob(resolve,mime,.94));if(!blob)throw new Error('Export not supported');let link=document.createElement('a');let url=URL.createObjectURL(blob);link.href=url;link.download=`wallpaper-${state.style}-${w}x${h}-${state.seed}.${format==='jpeg'?'jpg':format}`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),15000);toast('Wallpaper downloaded')}catch(err){console.error(err);toast('Export failed: try smaller size or another format')}finally{buttons.forEach(b=>b.disabled=false);$('status').textContent='Ready'}}
 document.addEventListener('DOMContentLoaded',init);

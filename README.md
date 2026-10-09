@@ -1,22 +1,18 @@
-# Wallpaper Studio
+# Wallpaper Studio Pro v2.1 — Unified Edition
 
-Free, client-side wallpaper generator, with no server, external APIs, subscriptions, CDN, or tracking. Nine procedural styles, 10 color palettes, device resolutions, live preview, seeded variations, presets saved in localStorage, PNG/JPG/WebP export, responsive UI, and PWA offline caching after first visit.
+One free, static, mobile-first app with **Aurora, Glass, AMOLED**, and eight other procedural styles. All generation happens locally in the browser.
 
-## Launch
+## Main features
+- Aurora: luminous flowing curtains with intensity and flow controls
+- Glass: translucent panels, highlights and glossy borders
+- AMOLED: pure black background with colored neon glow and waves
+- Adaptive intensity/flow labels for each featured style
+- Device presets, custom resolutions, palettes, grain, glow, rotation, local presets, JSON import/export
+- PNG/JPEG/WebP downloads and simulated lock-screen preview
+- Offline caching after first visit, no subscriptions or API keys
 
-Open `index.html` in a modern browser. Download and generation work locally. For offline installation and clipboard permissions, use a local server or GitHub Pages (HTTPS):
+## Update existing repo
+Upload the **six files inside this ZIP**, not the ZIP itself, to the root of `main` at https://github.com/parth6001/wallpaper-studio. Replace the six existing files. Keep Settings → Pages → Deploy from a branch → main → /(root). Wait for Pages deployment, then hard-refresh or clear old site data if the previous version remains.
 
-```bash
-python -m http.server 8000
-```
-
-Then visit http://localhost:8000. For free hosting, make a public GitHub repository, upload the five web files at the root, and enable **Settings → Pages → Deploy from a branch → main / (root)**. The GitHub Pages URL will be `https://YOUR_USERNAME.github.io/REPOSITORY/`. Repository must meet GitHub Pages eligibility for your account. Once loaded through HTTPS, choose *Add to Home screen* / *Install app* in Chrome on Android.
-
-## Notes
-
-- Graphics are procedural illustrations, not AI-generated photorealistic imagery.
-- Wallpapers are not automatically applied to phone home/lock screen; download and use Android's wallpaper settings.
-- Export resolutions above 32 megapixels are intentionally blocked to reduce crashes. Very high resolutions may still exceed device memory.
-- Local history contains up to 12 design settings, not full exported image files. Browser clearing may erase them.
-- Some browsers may not support WebP saving or PWA SVG icons. PNG is the most compatible export.
-- Everything uses built-in browser APIs; no analytics, API calls, or third-party dependencies.
+## Limits
+Canvas effects are procedural, not true AI generation or optical refraction. High-resolution exports depend on device memory.
