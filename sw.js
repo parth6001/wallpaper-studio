@@ -1,5 +1,5 @@
 /* GitHub Pages-friendly: network-first for app shell and offline fallback. */
-const CACHE='wallpaper-studio-v4-1-theme-fix-20261010';
+const CACHE='wallpaper-studio-v4-2-final-20261010';
 const FILES=['./','./index.html','./styles.css','./engine.js','./app.js','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('wallpaper-studio-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
