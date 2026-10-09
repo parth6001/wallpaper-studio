@@ -1,8 +1,59 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090c16"><meta name="description" content="Wallpaper Studio Ultimate: free cinematic wallpapers made locally on your device."><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><title>Wallpaper Studio Ultimate v3</title><link rel="stylesheet" href="./style.css"></head><body>
-<header><div class="brand"><span class="mark">◈</span><div><b>WALLPAPER <em>STUDIO</em></b><small>ULTIMATE / 3.0</small></div></div><div class="topactions"><span class="tag">LOCAL · FREE · PRIVATE</span><button id="fullscreen" class="iconbtn" title="Fullscreen preview">⛶</button></div></header>
-<main><section class="workspace"><div class="stagehead"><div><small class="eyebrow">LIVE CANVAS</small><h1 id="styleTitle">Liquid Glass</h1></div><div class="stagebuttons"><button id="random" class="btn quiet">✦ Remix</button><button id="lock" class="btn quiet">◷ Lock preview</button></div></div><div class="viewport" id="viewport"><canvas id="canvas" aria-label="Wallpaper preview"></canvas><div id="lockOverlay" hidden><span id="date"></span><strong id="time"></strong><small>◌ &nbsp; ◌ &nbsp; ◌</small></div><div class="cornerlabel" id="cornerlabel">1080 × 2400</div></div><div class="bottomrow"><span id="status">Ready · local rendering</span><button class="btn accent" id="download">↓ Export wallpaper</button></div></section>
-<aside class="controls"><div class="tabs" role="tablist"><button class="tab active" data-tab="create">Create</button><button class="tab" data-tab="adjust">Adjust</button><button class="tab" data-tab="library">Library</button></div>
-<div class="tabpage" id="create"><div class="sectiontitle">SIGNATURE ENGINES <span>06</span></div><div class="stylegrid" id="styles"></div><div class="sectiontitle">CURATED PALETTES</div><div class="palettegrid" id="palettes"></div><div class="colors"><label>LIGHT<input id="c0" type="color"></label><label>GLOW<input id="c1" type="color"></label><label>DEPTH<input id="c2" type="color"></label></div><div class="sectiontitle">DEVICE FORMAT</div><select id="resolution"><option value="1080x2400">Android · 1080 × 2400</option><option value="1440x3200">Android QHD · 1440 × 3200</option><option value="1290x2796">iPhone · 1290 × 2796</option><option value="2560x1600">Tablet · 2560 × 1600</option><option value="3840x2160">Desktop 4K · 3840 × 2160</option><option value="custom">Custom dimensions</option></select><div class="dims" id="dims" hidden><label>WIDTH<input id="width" type="number" min="256" max="7680" value="1080"></label><label>HEIGHT<input id="height" type="number" min="256" max="7680" value="2400"></label></div></div>
-<div class="tabpage" id="adjust" hidden><div class="sectiontitle">MATERIAL & LIGHTING</div><div id="sliders"></div><div class="sectiontitle">COMPOSITION</div><div class="actions"><button class="btn quiet" id="undo">↶ Undo</button><button class="btn quiet" id="redo">↷ Redo</button><button class="btn quiet" id="reset">Reset</button></div><div class="sectiontitle">EXPORT OPTIONS</div><label class="field">Image format<select id="format"><option value="png">PNG · lossless</option><option value="webp">WebP · compact</option><option value="jpeg">JPG · compatible</option></select></label><label class="field">Quality (JPG / WebP)<input id="quality" type="range" min="60" max="100" value="94"></label><p class="hint">Export renders at your selected resolution. Large files may exceed mobile GPU or memory limits.</p></div>
-<div class="tabpage" id="library" hidden><div class="sectiontitle">YOUR COLLECTION</div><p class="hint">Saved on this device. No cloud account required.</p><button class="btn accent wide" id="save">♡ Save current design</button><div id="saved" class="saved"></div><div class="sectiontitle">PORTABLE PROJECTS</div><div class="actions"><button class="btn quiet" id="exportJson">↓ Export JSON</button><label class="btn quiet upload">↑ Import JSON<input id="importJson" type="file" accept=".json,application/json" hidden></label></div></div>
-<div class="sidebarfoot">No subscription · No AI API · Runs on your device</div></aside></main><div class="toast" id="toast" role="status" hidden></div><script src="./app.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f4f2" />
+  <meta name="description" content="Make beautiful minimalist wallpapers. Choose a pattern, pick a palette, remix and download — free, private, no account." />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Wallpaper Studio — Make something beautiful</title>
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <header class="masthead" aria-label="Site header">
+      <div class="identity"><span class="identity-symbol" aria-hidden="true">◒</span><span>wallpaper<span class="identity-strong">studio</span><small>CREATE SOMETHING BEAUTIFUL</small></span></div>
+      <div class="head-actions">
+        <button type="button" class="icon-control" id="homeButton" title="Back to the original design" aria-label="Reset to default"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 11 9-7 9 7v9H3z"/><path d="M9 20v-7h6v7"/></svg></button>
+        <button type="button" class="icon-control dark-control" id="surpriseButton" title="Surprise me" aria-label="Generate a surprise design"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v16M4 12h16M6.3 6.3l11.4 11.4M17.7 6.3 6.3 17.7"/></svg></button>
+      </div>
+      <div class="head-right"><span class="free-pill">FREE FOREVER</span><button type="button" class="theme-control" id="previewToggle" title="Toggle lock-screen clock"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M10 18h4"/></svg><span id="previewToggleText">Clock on</span></button></div>
+    </header>
+
+    <main>
+      <section class="intro" aria-label="Introduction"><div><p class="kicker">THE WALLPAPER PLAYGROUND</p><h1>Make something <em>beautiful.</em></h1><p class="lead">Choose a pattern, find your color, and make it yours.</p></div><span class="intro-count">INFINITE COMBINATIONS <span aria-hidden="true">↗</span></span></section>
+
+      <section class="previews" aria-label="Live wallpaper previews">
+        <div class="preview-box desktop-box">
+          <div class="section-header"><h2>DESKTOP <span>4K</span></h2><span class="section-meta">3840 × 2160</span></div>
+          <div class="wallpaper-frame desktop-frame" id="desktopFrame"><canvas id="desktopCanvas" width="800" height="450" aria-label="Desktop wallpaper preview"></canvas><div class="lock-overlay desktop-clock" id="desktopClock" aria-hidden="true"><span class="clock-date"></span><strong class="clock-time"></strong></div><span class="preview-corner">16:9</span></div>
+        </div>
+        <div class="preview-box phone-box">
+          <div class="section-header"><h2 id="phoneHeader">ANDROID <span>PHONE</span></h2><button type="button" class="text-switch" id="deviceToggle" title="Switch phone preview">Switch to iPhone ↗</button></div>
+          <div class="phone-align"><div class="wallpaper-frame phone-frame" id="phoneFrame"><canvas id="phoneCanvas" width="390" height="867" aria-label="Phone wallpaper preview"></canvas><div class="lock-overlay phone-clock" id="phoneClock" aria-hidden="true"><span class="clock-date"></span><strong class="clock-time"></strong><span class="clock-lock">◦ &nbsp; ◦ &nbsp; ◦</span></div></div></div>
+          <p class="phone-resolution" id="phoneResolution">1080 × 2400 px</p>
+        </div>
+      </section>
+
+      <section class="controls-panel" aria-label="Wallpaper creation controls">
+        <div class="controls-heading"><div><span class="eyebrow">01 / CREATE</span><h2>Make it yours.</h2></div><button class="icon-text" id="favoriteButton" aria-label="Save design to favorites" type="button"><span id="favoriteIcon">♡</span><span id="favoriteText">Save design</span></button></div>
+        <div class="control-group"><div class="group-heading"><h3>PATTERN</h3><span>Pick your starting point</span></div><div class="pattern-grid" id="patternGrid" role="group" aria-label="Wallpaper patterns"></div></div>
+        <div class="advanced-wrap"><button class="advanced-trigger" type="button" id="advancedToggle" aria-expanded="false" aria-controls="advancedGrid"><span><span class="sparkle">✦</span> EXTRA STYLES <small>Aurora · AMOLED · Glass</small></span><span class="chevron" id="advancedChevron">＋</span></button><div id="advancedGrid" class="pattern-grid advanced-grid" hidden></div></div>
+        <div class="control-group"><div class="group-heading"><h3>COLOR PALETTE</h3><span id="paletteName">Graphite</span></div><div class="palette-grid" id="paletteGrid" role="group" aria-label="Color palettes"></div></div>
+        <div class="control-group mode-group"><div class="group-heading"><h3>WALLPAPER MODE</h3><span>Changes your wallpaper colors</span></div><div class="mode-tabs" role="group" aria-label="Wallpaper color mode"><button type="button" id="darkMode" class="mode-choice selected" aria-pressed="true">◕ &nbsp; Dark</button><button type="button" id="lightMode" class="mode-choice" aria-pressed="false">☼ &nbsp; Light</button></div></div>
+        <div class="details-wrap"><button type="button" class="details-trigger" id="adjustToggle" aria-expanded="false" aria-controls="detailPanel"><span>Fine-tune design</span><span id="adjustChevron">＋</span></button><div id="detailPanel" hidden><div class="tune-grid" id="tuneGrid"></div><button class="muted-link" type="button" id="restoreSliders">Reset adjustments</button></div></div>
+
+        <div class="action-stack"><button type="button" id="generateButton" class="main-action remix"><span aria-hidden="true">⟳</span> GENERATE VARIATION <small>Never the same twice</small></button><button type="button" id="variationsButton" class="quiet-action">✦ &nbsp; Show me 4 options</button></div>
+        <div class="variation-section" id="variationsSection" hidden><div class="group-heading"><h3>YOUR NEXT FOUR</h3><span>Tap to try one</span></div><div id="variationGrid" class="variation-grid"></div></div>
+        <div class="exports"><button type="button" class="main-action primary" id="downloadDesktop"><span class="download-icon" aria-hidden="true">▣</span> DOWNLOAD DESKTOP <small>3840 × 2160 px · PNG</small></button><button type="button" class="main-action secondary" id="downloadPhone"><span class="download-icon" aria-hidden="true">▯</span> <span id="downloadPhoneLabel">DOWNLOAD ANDROID</span><small id="downloadPhoneSize">1080 × 2400 px · PNG</small></button></div>
+      </section>
+
+      <section class="collection" aria-label="Saved designs and history"><div class="collection-head"><div><span class="eyebrow">02 / YOUR COLLECTION</span><h2>Keep the good ones.</h2></div><div class="collection-tabs"><button type="button" class="active" id="recentTab">Recent</button><button type="button" id="favoritesTab">Favorites <span id="favoriteCount">0</span></button></div></div><p class="collection-hint">Saved privately in this browser. Tap a thumbnail to restore its settings.</p><div class="history-grid" id="historyGrid"></div><div class="collection-actions"><button type="button" class="plain-button" id="shareButton">↗ &nbsp; Share this design</button><button type="button" class="plain-button" id="clearHistory">Clear recent history</button></div></section>
+    </main>
+    <footer><div class="identity footer-identity"><span class="identity-symbol" aria-hidden="true">◒</span><span>wallpaper<span class="identity-strong">studio</span></span></div><p>Made for creativity. No account, no tracking, no subscription.</p><span>© Wallpaper Studio v4.0</span></footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="./engine.js" defer></script><script src="./app.js" defer></script>
+</body>
+</html>
